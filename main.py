@@ -4,6 +4,7 @@ import sqlite3
 
 from fastapi import FastAPI
 from dotenv import load_dotenv
+import uvicorn
 
 # Cargar variables de entorno
 load_dotenv()
@@ -16,12 +17,21 @@ print(f"Usando base de datos: {DB}")
 
 app = FastAPI()
 
+# Conexión a la base de datos
+def get_db_connection():
+    try:
+        conn = sqlite3.connect(DB)
+        return conn
+    except sqlite3.Error as e:
+        print(f"Error al conectar a la base de datos: {e}")
+        raise
+
 
 @app.get("/advisors/{advisor_id}/expired-policies")
 def list_expired_policies(advisor_id: str):
     """Lista las pólizas vencidas de un asesor."""
 
-    conn = sqlite3.connect(DB)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
@@ -93,3 +103,6 @@ def list_expired_policies(advisor_id: str):
 
     finally:
         conn.close()
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
