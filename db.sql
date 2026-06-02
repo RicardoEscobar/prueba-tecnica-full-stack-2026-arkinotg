@@ -16,8 +16,7 @@ CREATE TABLE IF NOT EXISTS policies (
     client_id INTEGER NOT NULL,
     insurer TEXT NOT NULL,
     expiration_date TEXT NOT NULL, -- A text string that is one of the ISO 8601 date/time values shown in items 1 through 10 below. Example: '2025-05-29 14:16:00'
-    status INTEGER NOT NULL CHECK(status IN (1, 0)) -- An integer that is either 1 (managed) or 0 (not managed)
-
+    status INTEGER NOT NULL CHECK(status IN (1, 0)), -- An integer that is either 1 (managed) or 0 (not managed)
     FOREIGN KEY (client_id) REFERENCES clients(id)
 );
 
