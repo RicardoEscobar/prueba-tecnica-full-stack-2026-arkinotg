@@ -105,9 +105,10 @@ def list_expired_policies(advisor_id: str):
             attempts = cursor.fetchone()[0]
 
             priority = "urgent" if days_overdue > 7 else "normal"
+            days_overdue = max(days_overdue, 0)
             priority_message = {
-                "urgent": "Contactar urgentemente para evitar pérdida del cliente",
-                "normal": "Contactar al cliente pronto para renovar la póliza"
+                "urgent": f"Contactar urgentemente para evitar pérdida del cliente. Han pasado {days_overdue} días desde el vencimiento.",
+                "normal": f"Contactar al cliente pronto para renovar la póliza. Han pasado {days_overdue} días desde el vencimiento.",
             }
 
             result.append(
