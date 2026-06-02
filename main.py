@@ -58,7 +58,9 @@ def list_expired_policies(advisor_id: str):
     cursor = conn.cursor()
 
     try:
-        today = datetime.now().date()
+        now = datetime.now()
+        now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+        today = now.date()
 
         cursor.execute(
             """
@@ -67,7 +69,7 @@ def list_expired_policies(advisor_id: str):
             WHERE advisor_id = ?
               AND expiration_date < ?
             """,
-            (advisor_id, today),
+                        (advisor_id, now_str),
         )
 
         expired = cursor.fetchall()
@@ -76,9 +78,7 @@ def list_expired_policies(advisor_id: str):
         for policy in expired:
             policy_id, client_id, insurer, exp_date_str, status = policy
 
-            exp_date = datetime.strptime(
-                exp_date_str, "%Y-%m-%d"
-            ).date()
+            exp_date = datetime.fromisoformat(exp_date_str).date()
 
             days_overdue = (today - exp_date).days
 
@@ -105,6 +105,10 @@ def list_expired_policies(advisor_id: str):
             attempts = cursor.fetchone()[0]
 
             priority = "urgent" if days_overdue > 7 else "normal"
+            priority_message = {
+                "urgent": "Contactar urgentemente para evitar pérdida del cliente",
+                "normal": "Contactar al cliente pronto para renovar la póliza"
+            }
 
             result.append(
                 {
@@ -116,15 +120,15 @@ def list_expired_policies(advisor_id: str):
                     "days_overdue": days_overdue,
                     "contact_attempts": attempts,
                     "priority": priority,
-                    "recommended_action": (
-                        "Contactar urgentemente para evitar pérdida del cliente"
-                    ),
+                    "recommended_action": priority_message[priority],
                 }
             )
 
         return result
 
     except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    except ValueError as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
     finally:
