@@ -2,25 +2,39 @@ import os
 from datetime import datetime
 import sqlite3
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from dotenv import load_dotenv
 import uvicorn
 
 # Cargar variables de entorno
 load_dotenv()
-DB = os.getenv("SQLITE3_DB")
-
-if not DB:
-    raise ValueError("La variable de entorno SQLITE3_DB no está definida. Verifica el archivo .env")
-
-print(f"Usando base de datos: {DB}")
 
 app = FastAPI()
 
+
+def get_db_path():
+    db_path = os.getenv("SQLITE3_DB")
+
+    if not db_path:
+        raise ValueError(
+            "La variable de entorno SQLITE3_DB no está definida. Verifica el archivo .env"
+        )
+
+    if not os.path.isfile(db_path):
+        raise FileNotFoundError(
+            f"No se encontró el archivo de base de datos en la ruta especificada: {db_path}"
+        )
+
+    return db_path
+
+
 # Conexión a la base de datos
-def get_db_connection():
+def get_db_connection(db_path=None):
     try:
-        conn = sqlite3.connect(DB)
+        if db_path is None:
+            db_path = get_db_path()
+
+        conn = sqlite3.connect(db_path)
         return conn
     except sqlite3.Error as e:
         print(f"Error al conectar a la base de datos: {e}")
@@ -31,7 +45,16 @@ def get_db_connection():
 def list_expired_policies(advisor_id: str):
     """Lista las pólizas vencidas de un asesor."""
 
-    conn = get_db_connection()
+    try:
+        conn = get_db_connection()
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail="No se pudo conectar a la base de datos"
+        ) from e
     cursor = conn.cursor()
 
     try:
@@ -101,8 +124,11 @@ def list_expired_policies(advisor_id: str):
 
         return result
 
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
     finally:
         conn.close()
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="localhost", port=8000)
