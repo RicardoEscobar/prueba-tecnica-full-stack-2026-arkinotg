@@ -18,6 +18,14 @@ Una vez que hayas instalado las dependencias, puedes ejecutar el proyecto con:
 python main.py
 ```
 
+## Pruebas unitarias con pytest
+
+Para correr las pruebas unitarias, asegúrate de tener pytest instalado y luego ejecuta el siguiente comando:
+
+```bash
+pytest tests/unit/test_main.py
+```
+
 ## Decisiones y reflexiones
 
 Durante el desarrollo de este proyecto, tomé varias decisiones importantes. Primero, decidí utilizar Python como lenguaje de programación debido a su simplicidad y la amplia disponibilidad de bibliotecas que facilitan el desarrollo.
