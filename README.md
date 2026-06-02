@@ -1,5 +1,7 @@
 # Cómo correrlo + decisiones + reflexión
 
+Este repositorio contiene una API RESTful para listar las pólizas vencidas de un asesor específico. A continuación, se detallan los pasos para correr el proyecto, así como las decisiones tomadas durante su desarrollo y algunas reflexiones finales.
+
 ## Cómo correrlo
 
 Para correr el proyecto, primero debes clonar el repositorio y luego instalar las dependencias necesarias. Puedes hacerlo con los siguientes comandos:
